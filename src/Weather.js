@@ -1,28 +1,52 @@
-import React from "react";
+import React, { useState } from "react";
+import axios from "axios";
 import "./Weather.css";
 
-export default function Weather() {
-  let weatherData = {
-    city: "New York",
-    temperature: 19,
-    date: "Tuesday 10:00",
-    description: "Cloudy",
-    imgUrl: "https://ssl.gstatic.com/onebox/weather/64/sunny.png",
-    humidity: 80,
-    wind: 10,
-  };
+export default function Weather(props) {
+  const [weatherData, setWeatherData] = useState({ ready: false });
+  const [city, setCity] = useState(props.defaultCity);
 
-  return (
-    <>
+  function handleResponse(response) {
+    setWeatherData({
+      ready: true,
+      coordinates: response.data.coord,
+      temperature: response.data.main.temp,
+      humidity: response.data.main.humidity,
+      date: new Date(response.data.dt * 1000),
+      description: response.data.weather[0].description,
+      icon: response.data.weather[0].icon,
+      wind: response.data.wind.speed,
+      city: response.data.name,
+    });
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    search();
+  }
+
+  function handleCityChange(event) {
+    setCity(event.target.value);
+  }
+
+  function search() {
+    const apiKey = "275a753ef1dcfe59aa4a1d07e378894a";
+    let apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+    axios.get(apiUrl).then(handleResponse);
+  }
+
+  if (weatherData.ready) {
+    return (
       <div className="Weather">
-        <form className="mb-3">
+        <form onSubmit={handleSubmit}>
           <div className="row">
             <div className="col-9">
               <input
                 type="search"
-                placeholder="Type a city.."
+                placeholder="Enter a city.."
                 className="form-control"
-                autoComplete="off"
+                autoFocus="on"
+                onChange={handleCityChange}
               />
             </div>
             <div className="col-3">
@@ -34,45 +58,10 @@ export default function Weather() {
             </div>
           </div>
         </form>
-        <div className="overview">
-          <h1>{weatherData.city}</h1>
-          <ul>
-            <li>Last updated: {weatherData.date}</li>
-            <li>{weatherData.description}</li>
-          </ul>
-        </div>
-        <div className="row">
-          <div className="col-6">
-            <div className="clearfix weather-temperature">
-              <img
-                src={weatherData.imgUrl}
-                alt={weatherData.description}
-                className="float-left"
-              />
-              <div className="float-left">
-                <strong>{weatherData.temperature}</strong>
-                <span className="units">
-                  <a href="/">°C</a> | <a href="/">°F</a>
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="col-6">
-            <ul>
-              <li>Humidity: {weatherData.humidity}%</li>
-              <li>Wind: {weatherData.wind} km/h</li>
-            </ul>
-          </div>
-        </div>
       </div>
-      <div>
-        <p>
-          <a href="https://github.com/JennieCodes/react-weatherapp-project.git">
-            Open sourced
-          </a>{" "}
-          by Jennie Chen on GitHub
-        </p>
-      </div>
-    </>
-  );
+    );
+  } else {
+    search();
+    return "Loading...";
+  }
 }
