@@ -6,7 +6,7 @@ import "./Weather.css";
 
 import "./index.css";
 import "bootstrap/dist/css/bootstrap.css";
-import App from "./App";
+import "./App.js";
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement);
